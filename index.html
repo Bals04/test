@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Leaflet Map - Davao City Gyms</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/leaflet-routing-machine/3.2.12/leaflet-routing-machine.css"
+    />
+    <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nearest Gym Locator</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      background-color: #f0f0f0;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      width: 100rem;
+      align-items: center;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      margin: 20px;
+    }
+
+    .header {
+      font-size: 28px;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    .content {
+      display: flex;
+      gap: 20px;
+      width: 100%;
+    }
+
+    #map {
+      height: 600px;
+      flex: 3;
+      border-radius: 8px;
+    }
+
+    .gyms-container {
+      flex: 2;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      max-height: 600px;
+      overflow-y: auto;
+    }
+
+    .gyms-container h2 {
+      font-size: 24px;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    .gyms-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .gym-item {
+      cursor: pointer;
+      padding: 15px;
+      margin-bottom: 10px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background-color: #f9f9f9;
+      transition: background-color 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .gym-item:hover {
+      background-color: #e9e9e9;
+    }
+
+    .gym-name {
+      font-weight: bold;
+      margin: 0;
+    }
+
+    .gym-distance {
+      font-size: 0.9em;
+      color: #666;
+    }
+
+    .login-btn {
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 4px;
+      text-decoration: none;
+      transition: background-color 0.3s ease;
+      margin-top: 20px;
+    }
+
+    .login-btn:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="header">Nearest Gym Locator</h1>
+    <div class="content">
+      <div id="map"></div>
+      <div class="gyms-container">
+        <h2>Top 3 Nearest Gyms</h2>
+        <ul class="gyms-list" id="nearestGymsList"></ul>
+      </div>
+    </div>
+    <button class="login-btn" id="showLoc">Show My Location</button>
+  </div>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-routing-machine/3.2.12/leaflet-routing-machine.js"></script>
+</body>
+</html>
+
+
+  <script>
+    // Initialize the map and set its view to Davao City
+    var userLat = 0;
+    var userLong = 0;
+    var show = false;
+    var control = null; // Variable to hold the reference to the routing control
+    var dist = 0;
+
+    var map = L.map("map").setView([7.110959021754781, 125.61266071845108], 13);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    }).addTo(map);
+
+    var gyms = [
+      {
+        name: "Gym 1",
+        coords: [7.068712359255382, 125.60263646371139],
+        rates: "50 daily/ 500 monthly",
+        image:
+          "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQye01c3bWg8shran7OQu2Nocw-f4ApUSHOCQ&s",
+      },
+      {
+        name: "Gym 2",
+        coords: [7.072014176936069, 125.60497158080817],
+        rates: "70 daily/ 500 monthly",
+        image:
+          "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQye01c3bWg8shran7OQu2Nocw-f4ApUSHOCQ&s",
+      },
+      {
+        name: "Gym 3",
+        coords: [7.117, 125.625],
+        rates: "90 daily/ 500 monthly",
+        image:
+          "https://dstarsfitnessgym.com/cdn/shop/files/social.jpg?v=1683247366",
+      },
+      {
+        name: "Gym 4",
+        coords: [7.083470388371716, 125.61190035326806],
+        rates: "20 daily/ 500 monthly",
+        image:
+          "https://static.vecteezy.com/system/resources/previews/017/504/043/non_2x/bodybuilding-emblem-and-gym-logo-design-template-vector.jpg",
+      },
+      {
+        name: "Elevation fitness gym",
+        coords: [7.104321324444226, 125.61388650794707],
+        rates: "150 daily/ 800 monthly",
+        image:
+          "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQye01c3bWg8shran7OQu2Nocw-f4ApUSHOCQ&s",
+      },
+      {
+        name: "Azuela Cove",
+        coords: [7.103077488490651, 125.64470035238048],
+        rates: "120 daily/ 1000 monthly",
+        image:
+          "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR7TK3auLFx7_Sci6T3A6VkGHyHMGJnVB72bg&s",
+      },
+    ];
+
+    var markers = [];
+    var userLoc = [];
+    var nearby = [];
+
+    gyms.forEach(function (gym) {
+      var marker = L.marker(gym.coords).addTo(map);
+      marker.bindPopup(`
+      <div>
+        <img src="${gym.image}" alt="${gym.name}" style="max-width: 200px;">
+        <h3>${gym.name}</h3>
+        <p>Rates: ${gym.rates}</p>
+      </div>
+    `);
+      markers.push(marker);
+    });
+
+    function populateGymsList(userCoords) {
+      var gymsList = document.getElementById("nearestGymsList");
+      var userlat = userCoords[0];
+      var userlong = userCoords[1];
+      var userMarker = null;
+      // Clear existing list items
+      gymsList.innerHTML = "";
+
+      // Add new list items
+      nearby.slice(0, 3).forEach(function (nearbyGym, index) {
+        var listItem = document.createElement("div");
+        listItem.classList.add("gym-item"); // Add a class for styling
+        var content = `
+          <img src="${nearbyGym.gym.image}" alt="${nearbyGym.gym.name}" style="max-width: 200px;">
+          <div class="gym-name">${nearbyGym.gym.name}</div>
+          <div class="gym-distance">${nearbyGym.distance.toFixed(
+            2
+          )} km<br></div>
+        `;
+        
+        listItem.innerHTML = content;
+        listItem.addEventListener("click", function (e) {
+          removeLastMarker();
+          console.log("clickkkz")
+          var gymDistanceLat = 0;
+          var gymDistanceLong = 0;
+          console.log(`Clicked on ${nearbyGym.gym.name}`);
+          console.log(
+            `coords:  ${nearbyGym.gym.coords[0]}, ${nearbyGym.gym.coords[1]}`
+          );
+          gymDistanceLat = nearbyGym.gym.coords[0];
+          gymDistanceLong = nearbyGym.gym.coords[1];
+
+          
+          // Create a new marker for user location
+          userMarker = L.marker([userlat, userlong]).addTo(map);
+          userLoc.push(userMarker);
+          // Create a new marker for gym location
+          var gymMarker = L.marker([gymDistanceLat, gymDistanceLong]).addTo(map);
+          gymMarker.bindPopup(`
+        <div>
+          <img src="${nearbyGym.gym.image}" alt="${nearbyGym.gym.name}" style="max-width: 200px;">
+          <h3>${nearbyGym.gym.name}</h3>
+          <p>Rates: ${nearbyGym.gym.rates}</p>
+        </div>
+      `).openPopup(); // Ensure marker is interactive
+          // Define the waypoints (user location and gym location)
+          var waypoints = [
+            L.latLng(userlat, userlong),
+            L.latLng(gymDistanceLat, gymDistanceLong),
+          ];
+
+          // Clear previous route if exists
+          if (control) {
+            map.removeControl(control);
+          }
+
+          // Create routing control
+          control = L.Routing.control({
+            waypoints: waypoints,
+            routeWhileDragging: true,
+            show: !true,
+            lineOptions: {
+              styles: [{ color: "red", opacity: 1, weight: 5 }],
+            },
+            createMarker: function () {
+              return null; // Do not create default markers
+            },
+            addWaypoints: true 
+          }).addTo(map);
+
+          // Fit the map to show the route
+          var bounds = L.latLngBounds([userlat, userlong], [gymDistanceLat, gymDistanceLong ]);
+          map.fitBounds(bounds);
+        });
+        gymsList.appendChild(listItem);
+      });
+      
+      
+    }
+
+
+    function removeLastMarker() {
+      if (userLoc.length > 0) {
+        console.log(userLoc.length);
+        var lastMarker = userLoc.pop();
+        map.removeLayer(lastMarker);
+      }
+    }
+
+    function getDistance(coords1, coords2) {
+      var R = 6371; // Radius of the Earth in km
+      var dLat = ((coords2[0] - coords1[0]) * Math.PI) / 180;
+      var dLon = ((coords2[1] - coords1[1]) * Math.PI) / 180;
+      var a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos((coords1[0] * Math.PI) / 180) *
+          Math.cos((coords2[0] * Math.PI) / 180) *
+          Math.sin(dLon / 2) *
+          Math.sin(dLon / 2);
+      var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      var d = R * c; // Distance in km
+      return d;
+    }
+
+    // Function to find the nearest gym to the user's location
+    function findNearestGyms(userCoords) {
+      //var distances = [];
+      nearby = [];
+      gyms.forEach(function (gym, index) {
+        var gymCoords = gym.coords;
+        var distance = getDistance(userCoords, gymCoords);
+        
+
+        // Log the distance for debugging
+        console.log(
+          `Distance to ${gym.name} at (${gymCoords[0]}, ${
+            gymCoords[1]
+          }): ${distance.toFixed(2)} km`
+        );
+
+        // Push the distance and gym to the distances array
+        nearby.push({
+          gym: gym,
+          distance: distance,
+        });
+      });
+
+      // Sort the array by distance
+      nearby.sort(function (a, b) {
+        return a.distance - b.distance;
+      });
+
+      // Log the top 3 nearest gyms
+      console.log("Top 3 nearest gymszxzxczxc:");
+      for (let i = 0; i < 3 && i < nearby.length; i++) {
+        const nearest = nearby[i];
+        console.log(
+          `${nearest.gym.name} at (${nearest.gym.coords[0]}, ${
+            nearest.gym.coords[1]
+          }) with a distance of ${nearest.distance.toFixed(2)} km`
+        );
+      }
+
+      // Return the nearest gym
+      return nearby.length > 0 ? nearby[0].gym : null;
+    }
+
+    document.getElementById("showLoc").addEventListener("click", function () {
+      var label = document.getElementById("showLoc");
+      show = !show;
+      label.innerText = show ? "SHOWING WAYS" : "HIDING WAYS";
+      control.options.show = show;
+    });
+
+    function onMapClick(e) {
+      var newMarker = L.marker(e.latlng).addTo(map);
+      console.table(gyms);
+      removeLastMarker();
+      userLoc.push(newMarker);
+      // Example popup content
+      newMarker.bindPopup("COORDS: " + e.latlng);
+      userLat = e.latlng.lat;
+      userLong = e.latlng.lng;
+      makeRoute(userLat, userLong);
+    }
+    // Listen for click events on the map
+    map.on("click", onMapClick);
+
+
+
+
+
+    function makeRoute(latitude, longtitude) {
+      var userCoords = [latitude, longtitude];
+      // Find the nearest gym
+      var nearestMarker = findNearestGyms(userCoords);
+      console.log("LATITUDE: " + latitude + " Longtitude: " + longtitude);
+
+      if (nearestMarker) {
+        if (control !== null) {
+          map.removeControl(control);
+        }
+        // Create a routing control
+        control = L.Routing.control({
+          waypoints: [
+            L.latLng(userCoords[0], userCoords[1]),
+            L.latLng(nearestMarker.coords[0], nearestMarker.coords[1]),
+          ],
+          routeWhileDragging: true,
+          show: show,
+          lineOptions: {
+            styles: [{ color: "red", opacity: 1, weight: 5 }],
+          },
+          createMarker: function () {
+            return null;
+          }, // Hide default markers
+        }).addTo(map);
+        populateGymsList(userCoords);
+        // Zoom to the nearest marker
+        var nearestMarkerCoords = L.latLng(
+          nearestMarker.coords[0],
+          nearestMarker.coords[1]
+        );
+        // map.setView(nearestMarkerCoords, 14);
+
+        // Open the popup for the nearest marker
+        //nearestMarkerCoords.bindPopup('<b>Marker Popup Content</b>').openPopup("asasd");
+      } else {
+        alert("No nearby gyms found.");
+      }
+    }
+    // function getUserLocation(latitude, longtitude) {
+    //   var userCoords = [latitude, longtitude];
+    //   console.log(
+    //     "LATITUDE: " + userCoords[0] + " Longtitude: " + userCoords[1]
+    //   );
+    //   // Find the nearest gym
+    //   var nearestMarker = findNearestGym(userCoords);
+
+    //   if (nearestMarker) {
+    //     // Create a routing control
+    //     var control = L.Routing.control({
+    //       waypoints: [
+    //         L.latLng(userCoords[0], userCoords[1]),
+    //         nearestMarker.getLatLng(),
+    //       ],
+    //       routeWhileDragging: true,
+    //       show: false,
+    //       lineOptions: {
+    //         styles: [{ color: "blue", opacity: 1, weight: 5 }],
+    //       },
+    //       createMarker: function () {
+    //         return null;
+    //       }, // Hide default markers
+    //     }).addTo(map);
+
+    //     // Zoom to the nearest marker (commented out to prevent zooming)
+    //     // var nearestMarkerCoords = nearestMarker.getLatLng();
+    //     // map.setView(nearestMarkerCoords, 14);
+
+    //     // Open the popup for the nearest marker
+    //     // nearestMarker.openPopup();
+    //   } else {
+    //     alert("No nearby gyms found.");
+    //   }
+    // }
+  </script>
+</html>

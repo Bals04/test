@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Map of Buhangin Area in Davao City with Random Markers</title>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <!-- Leaflet Routing Machine CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet-routing-machine/3.2.12/leaflet-routing-machine.css" />
+    <!-- Custom CSS -->
+    <style>
+        #map { height: 600px; }
+    </style>
+</head>
+<body>
+    <!-- Map Container -->
+    <div id="map"></div>
+
+    <!-- Leaflet and Plugins JS -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.0/leaflet.markercluster.js"></script>
+    <!-- Leaflet Routing Machine JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-routing-machine/3.2.12/leaflet-routing-machine.js"></script>
+
+    <script>
+    // Initialize the map centered around Buhangin area
+    var map = L.map('map').setView([7.1214, 125.6260], 14); // Centered on Buhangin, Davao City
+
+    // Add base map layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+    }).addTo(map);
+
+    // Generate random markers around Buhangin area
+    var numberOfMarkers = 5;
+    var buhanginBounds = L.latLngBounds(
+        L.latLng(7.105, 125.610), // South West corner of Buhangin
+        L.latLng(7.135, 125.645)  // North East corner of Buhangin
+    );
+
+    var markers = [];
+
+    for (var i = 0; i < numberOfMarkers; i++) {
+        var lat = buhanginBounds.getSouth() + Math.random() * (buhanginBounds.getNorth() - buhanginBounds.getSouth());
+        var lng = buhanginBounds.getWest() + Math.random() * (buhanginBounds.getEast() - buhanginBounds.getWest());
+        var marker = L.marker([lat, lng]).addTo(map);
+        markers.push(marker);
+    }
+
+    // Add marker clustering
+    var markersLayer = L.markerClusterGroup();
+    markersLayer.addLayers(markers);
+    map.addLayer(markersLayer);
+
+    var userLocationMarker = null;
+    var routingControl = null;
+
+    // Function to handle map clicks
+    function handleMapClick(e) {
+        // Remove the previous user location marker, if exists
+        if (userLocationMarker) {
+            map.removeLayer(userLocationMarker);
+        }
+
+        // Remove the previous routing control, if exists
+        if (routingControl) {
+            map.removeControl(routingControl);
+        }
+
+        // Add a new user location marker at the clicked location
+        userLocationMarker = L.marker(e.latlng, { draggable: true })
+                              .addTo(map)
+                              .bindPopup("User Location")
+                              .openPopup();
+
+        // Calculate routes and log distances to each marker
+        markers.forEach(function(marker) {
+            var waypoints = [
+                L.Routing.waypoint(userLocationMarker.getLatLng()),
+                L.Routing.waypoint(marker.getLatLng())
+            ];
+
+            var controlOptions = {
+                waypoints: waypoints,
+                routeWhileDragging: true,
+                lineOptions: {
+                    styles: [{ color: 'blue', opacity: 0.8, weight: 6 }]
+                }
+            };
+
+            routingControl = L.Routing.control(controlOptions).addTo(map);
+
+            // Calculate distance between user location and marker
+            var distance = userLocationMarker.getLatLng().distanceTo(marker.getLatLng());
+            console.log(`Distance from User Location to Marker (${marker.getLatLng().lat}, ${marker.getLatLng().lng}): ${distance.toFixed(2)} meters`);
+        });
+    }
+
+    // Event listener for clicking on the map
+    map.on('click', function(e) {
+        handleMapClick(e);
+    });
+    </script>
+</body>
+</html>

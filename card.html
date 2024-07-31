@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gym Card</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .gym-card {
+            width: 300px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin: 20px;
+        }
+        .gym-image {
+            width: 100%;
+            height: 150px;
+            background-color: #e0e0e0;
+            background-image: url('gym-logo.jpg'); /* Replace with your image path */
+            background-size: cover;
+            background-position: center;
+        }
+        .gym-details {
+            padding: 16px;
+        }
+        .gym-details h3 {
+            margin: 0 0 8px;
+        }
+        .gym-details .rates, .gym-details .address, .gym-details .contact {
+            margin: 8px 0;
+        }
+        .gym-details .stars {
+            color: #f5c518;
+        }
+        .gym-actions {
+            display: flex;
+            justify-content: space-around;
+            padding: 16px;
+            border-top: 1px solid #ccc;
+        }
+        .gym-actions button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .gym-actions .order-btn {
+            background-color: #007bff;
+            color: white;
+        }
+        .gym-actions .call-btn {
+            background-color: #28a745;
+            color: white;
+        }
+        .gym-actions .directions-btn {
+            background-color: #ffc107;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="gym-card">
+        <div class="gym-image"></div>
+        <div class="gym-details">
+            <h3>Gym Name</h3>
+            <div class="rates">
+                <span>Daily Rates: $10</span> |
+                <span>Monthly Rates: $50</span>
+            </div>
+            <div class="address">1234 Fitness St, Workout City, Fitland</div>
+            <div class="contact">Contact: (123) 456-7890</div>
+            <div class="stars">⭐⭐⭐⭐⭐</div>
+        </div>
+        <div class="gym-actions">
+            <button class="order-btn">Order Now</button>
+            <button class="call-btn">Call</button>
+            <button class="directions-btn">Directions</button>
+        </div>
+    </div>
+</body>
+</html>
